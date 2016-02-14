@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Pml-course-project by mistydring</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Pml-course-project</h1>
+      <h2 class="project-tagline"></h2>
+      <a href="https://github.com/mistydring/PML-course-project" class="btn">View on GitHub</a>
+      <a href="https://github.com/mistydring/PML-course-project/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/mistydring/PML-course-project/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="written-by-mrr-on-2112016" class="anchor" href="#written-by-mrr-on-2112016" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Written by MRR on 2/11/2016</h1>
+
+<h1>
+<a id="set-working-directory-to-folder-where-data-are-stored" class="anchor" href="#set-working-directory-to-folder-where-data-are-stored" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Set working directory to folder where data are stored</h1>
+
+<p>setwd("C:/Users/Misty Ring-Ramirez/Dropbox/Coursera Courses/Practical Machine Learning Course Project")</p>
+
+<h1>
+<a id="load-libraries-i-anticipate-needing" class="anchor" href="#load-libraries-i-anticipate-needing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Load libraries I anticipate needing</h1>
+
+<p>library(caret)
+library(rpart)
+library(rpart.plot)
+library(RColorBrewer)
+library(rattle)
+library(randomForest)
+library(ggplot2)</p>
+
+<h1>
+<a id="set-random-seed-so-results-are-reproducible" class="anchor" href="#set-random-seed-so-results-are-reproducible" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Set random seed so results are reproducible</h1>
+
+<p>set.seed(223344)</p>
+
+<h1>
+<a id="load-training-and-testing-data" class="anchor" href="#load-training-and-testing-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Load training and testing data</h1>
+
+<p>train &lt;- read.csv("pml-training.csv", na.strings=c("NA",""), header=TRUE)
+test &lt;- read.csv("pml-testing.csv", na.strings=c("NA",""), header=TRUE)</p>
+
+<h1>
+<a id="partition-training-dataset-into-a-6040-split" class="anchor" href="#partition-training-dataset-into-a-6040-split" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Partition training dataset into a 60/40 split</h1>
+
+<p>inTrain &lt;- createDataPartition(y=train$classe, p=0.6, list=FALSE)
+myTraining &lt;- train[inTrain, ]; myTesting &lt;- train[-inTrain, ]</p>
+
+<h1>
+<a id="remove-variables-with-near-zero-variance" class="anchor" href="#remove-variables-with-near-zero-variance" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Remove variables with near zero variance</h1>
+
+<p>nzv &lt;- nearZeroVar(myTraining, saveMetrics=TRUE)
+myTraining &lt;- myTraining[,nzv$nzv==FALSE]</p>
+
+<p>nzv&lt;- nearZeroVar(myTesting,saveMetrics=TRUE)
+myTesting &lt;- myTesting[,nzv$nzv==FALSE]</p>
+
+<h1>
+<a id="describe-dimensions-of-training-and-testing-dataset" class="anchor" href="#describe-dimensions-of-training-and-testing-dataset" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Describe dimensions of training and testing dataset</h1>
+
+<p>dim(myTraining); dim(myTesting)
+summary(myTraining)</p>
+
+<h1>
+<a id="keep-the-variables-i-intend-to-use-as-features-and-the-outcome-of-course" class="anchor" href="#keep-the-variables-i-intend-to-use-as-features-and-the-outcome-of-course" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Keep the variables I intend to use as features (and the outcome, of course)</h1>
+
+<p>myTraining &lt;- myTraining[c("roll_belt", "pitch_belt", "yaw_belt", "total_accel_belt", "gyros_belt_x", "gyros_belt_y", "gyros_belt_z", "accel_belt_x", "accel_belt_y", "accel_belt_z", "magnet_belt_x", "magnet_belt_y", "magnet_belt_z", "roll_arm", "pitch_arm", "yaw_arm", "total_accel_arm", "gyros_arm_x", "gyros_arm_y", "gyros_arm_z", "accel_arm_x", "accel_arm_y", "accel_arm_z", "magnet_arm_x", "magnet_arm_y", "magnet_arm_z", "roll_dumbbell", "pitch_dumbbell", "yaw_dumbbell", "total_accel_dumbbell", "gyros_dumbbell_x", "gyros_dumbbell_y", "gyros_dumbbell_z", "accel_dumbbell_x", "accel_dumbbell_y", "accel_dumbbell_z", "magnet_dumbbell_x", "magnet_dumbbell_y", "magnet_dumbbell_z", "roll_forearm", "pitch_forearm", "yaw_forearm", "total_accel_forearm", "gyros_forearm_x", "gyros_forearm_y", "gyros_forearm_z", "accel_forearm_x", "accel_forearm_y", "accel_forearm_z", "magnet_forearm_x", "magnet_forearm_y", "magnet_forearm_z", "classe")]
+myTesting &lt;- myTesting[c("roll_belt", "pitch_belt", "yaw_belt", "total_accel_belt", "gyros_belt_x", "gyros_belt_y", "gyros_belt_z", "accel_belt_x", "accel_belt_y", "accel_belt_z", "magnet_belt_x", "magnet_belt_y", "magnet_belt_z", "roll_arm", "pitch_arm", "yaw_arm", "total_accel_arm", "gyros_arm_x", "gyros_arm_y", "gyros_arm_z", "accel_arm_x", "accel_arm_y", "accel_arm_z", "magnet_arm_x", "magnet_arm_y", "magnet_arm_z", "roll_dumbbell", "pitch_dumbbell", "yaw_dumbbell", "total_accel_dumbbell", "gyros_dumbbell_x", "gyros_dumbbell_y", "gyros_dumbbell_z", "accel_dumbbell_x", "accel_dumbbell_y", "accel_dumbbell_z", "magnet_dumbbell_x", "magnet_dumbbell_y", "magnet_dumbbell_z", "roll_forearm", "pitch_forearm", "yaw_forearm", "total_accel_forearm", "gyros_forearm_x", "gyros_forearm_y", "gyros_forearm_z", "accel_forearm_x", "accel_forearm_y", "accel_forearm_z", "magnet_forearm_x", "magnet_forearm_y", "magnet_forearm_z", "classe")]</p>
+
+<h1>
+<a id="i-plan-on-using-two-different-prediction-methods--decision-trees-and-random-forests" class="anchor" href="#i-plan-on-using-two-different-prediction-methods--decision-trees-and-random-forests" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>I plan on using two different prediction methods--decision trees and random forests.</h1>
+
+<h1>
+<a id="prediction-with-decision-trees-using-rpart" class="anchor" href="#prediction-with-decision-trees-using-rpart" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Prediction with decision trees using rpart</h1>
+
+<p>modFitrp &lt;- rpart(myTraining$classe ~., data=myTraining, method="class")
+fancyRpartPlot(modFitrp)</p>
+
+<p>predictions_rp &lt;- predict(modFitrp, myTesting, type = "class")
+c_matrix_rp &lt;- confusionMatrix(predictions, myTesting$classe)
+c_matrix_rp
+Confusion Matrix and Statistics</p>
+
+<pre><code>      Reference
+</code></pre>
+
+<p>Prediction    A    B    C    D    E
+         A 2045  230   22   83   14
+         B   79  911  159  136  146
+         C   59  187 1044  102  100
+         D   33  103   95  849   97
+         E   16   87   48  116 1085</p>
+
+<p>Overall Statistics</p>
+
+<pre><code>           Accuracy : 0.7563          
+             95% CI : (0.7467, 0.7658)
+No Information Rate : 0.2845          
+P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+
+              Kappa : 0.6909          
+</code></pre>
+
+<p>Mcnemar's Test P-Value : &lt; 2.2e-16       </p>
+
+<p>Statistics by Class:</p>
+
+<pre><code>                 Class: A Class: B Class: C Class: D Class: E
+</code></pre>
+
+<p>Sensitivity            0.9162   0.6001   0.7632   0.6602   0.7524
+Specificity            0.9378   0.9178   0.9308   0.9500   0.9583
+Pos Pred Value         0.8542   0.6366   0.6997   0.7213   0.8025
+Neg Pred Value         0.9657   0.9054   0.9490   0.9345   0.9450
+Prevalence             0.2845   0.1935   0.1744   0.1639   0.1838
+Detection Rate         0.2606   0.1161   0.1331   0.1082   0.1383
+Detection Prevalence   0.3051   0.1824   0.1902   0.1500   0.1723
+Balanced Accuracy      0.9270   0.7590   0.8470   0.8051   0.8554</p>
+
+<h1>
+<a id="prediction-with-random-forests" class="anchor" href="#prediction-with-random-forests" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Prediction with random forests</h1>
+
+<p>set.seed(223344)
+modFitrf &lt;- randomForest(classe ~ ., data=myTraining)
+predictions_rf &lt;- predict(modFitrf, myTesting, type = "class")
+c_matrix_rf &lt;- confusionMatrix(modFitrf, myTesting$classe)
+c_matrix_rf</p>
+
+<p>Confusion Matrix and Statistics</p>
+
+<pre><code>      Reference
+</code></pre>
+
+<p>Prediction    A    B    C    D    E
+         A 2231    4    0    0    0
+         B    1 1507   15    0    0
+         C    0    7 1351   17    3
+         D    0    0    2 1268    1
+         E    0    0    0    1 1438</p>
+
+<p>Overall Statistics</p>
+
+<pre><code>           Accuracy : 0.9935          
+             95% CI : (0.9915, 0.9952)
+No Information Rate : 0.2845          
+P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+
+              Kappa : 0.9918          
+</code></pre>
+
+<p>Mcnemar's Test P-Value : NA              </p>
+
+<p>Statistics by Class:</p>
+
+<pre><code>                 Class: A Class: B Class: C Class: D Class: E
+</code></pre>
+
+<p>Sensitivity            0.9996   0.9928   0.9876   0.9860   0.9972
+Specificity            0.9993   0.9975   0.9958   0.9995   0.9998
+Pos Pred Value         0.9982   0.9895   0.9804   0.9976   0.9993
+Neg Pred Value         0.9998   0.9983   0.9974   0.9973   0.9994
+Prevalence             0.2845   0.1935   0.1744   0.1639   0.1838
+Detection Rate         0.2843   0.1921   0.1722   0.1616   0.1833
+Detection Prevalence   0.2849   0.1941   0.1756   0.1620   0.1834
+Balanced Accuracy      0.9994   0.9951   0.9917   0.9928   0.9985</p>
+
+<p>plot(modFitrf)</p>
+
+<h1>
+<a id="it-appears-that-the-random-forests-performed-better-than-the-decisions-trees-so-i-continue-with-that-algorithm" class="anchor" href="#it-appears-that-the-random-forests-performed-better-than-the-decisions-trees-so-i-continue-with-that-algorithm" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>It appears that the random forests performed better than the decisions trees, so I continue with that algorithm</h1>
+
+<h1>
+<a id="predicting-results-on-test-data" class="anchor" href="#predicting-results-on-test-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Predicting results on test data</h1>
+
+<p>predictions_rf &lt;- predict(modFitrf, myTesting, type = "class")
+predictions_rf</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/mistydring/PML-course-project">Pml-course-project</a> is maintained by <a href="https://github.com/mistydring">mistydring</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
