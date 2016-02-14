@@ -84,6 +84,7 @@ myTesting &lt;- myTesting[c("roll_belt", "pitch_belt", "yaw_belt", "total_accel_
 
 <p>modFitrp &lt;- rpart(myTraining$classe ~., data=myTraining, method="class")
 fancyRpartPlot(modFitrp)</p>
+<img src="C:\Users\Misty Ring-Ramirez\Dropbox\Coursera Courses\Practical Machine Learning Course Project\Rplot.png" />
 
 <p>predictions_rp &lt;- predict(modFitrp, myTesting, type = "class")
 c_matrix_rp &lt;- confusionMatrix(predictions, myTesting$classe)
