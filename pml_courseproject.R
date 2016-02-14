@@ -41,14 +41,14 @@ modFitrp <- rpart(myTraining$classe ~., data=myTraining, method="class")
 fancyRpartPlot(modFitrp)
 
 predictions_rp <- predict(modFitrp, myTesting, type = "class")
-c_matrix_rp <- confusionMatrix(predictions, myTesting$classe)
+c_matrix_rp <- confusionMatrix(predictions_rp, myTesting$classe)
 c_matrix_rp
 
 #prediction with random forests
 set.seed(223344)
 modFitrf <- randomForest(classe ~ ., data=myTraining)
 predictions_rf <- predict(modFitrf, myTesting, type = "class")
-c_matrix_rf <- confusionMatrix(modFitrf, myTesting$classe)
+c_matrix_rf <- confusionMatrix(predictions_rf, myTesting$classe)
 c_matrix_rf
 
 plot(modFitrf)
